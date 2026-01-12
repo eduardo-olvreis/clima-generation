@@ -1,0 +1,36 @@
+/* Estilos gerais para o corpo da página */
+body {
+    font-family: Arial, sans-serif; /* Define a fonte padrão */
+    display: flex; /* Usa flexbox para centralizar o conteúdo */
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center; /* Centraliza verticalmente */
+    min-height: 100vh; /* Altura mínima de 100% da viewport */
+    margin: 0; /* Remove a margem padrão */
+    background-color: #f0f0f0; /* Cor de fundo suave */
+}
+
+/* Estilos para o contêiner de clima */
+.weather-container {
+    background-color: white; /* Fundo branco */
+    padding: 20px; /* Espaçamento interno */
+    border-radius: 8px; /* Bordas arredondadas */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+    text-align: center; /* Centraliza o texto */
+}
+
+/* Estilos para o título principal */
+h1 {
+    color: #333; /* Cor do texto escura */
+}
+
+/* Estilos para os parágrafos */
+p {
+    color: #555; /* Cor do texto cinza */
+    font-size: 1.1em; /* Tamanho da fonte ligeiramente maior */
+}
+
+/* Estilos para os elementos span que contêm os dados do clima */
+span {
+    font-weight: bold; /* Texto em negrito */
+    color: #007bff; /* Cor azul para destaque */
+}
