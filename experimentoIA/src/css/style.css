@@ -1,36 +1,97 @@
 /* Estilos gerais para o corpo da página */
 body {
-    font-family: Arial, sans-serif; /* Define a fonte padrão */
-    display: flex; /* Usa flexbox para centralizar o conteúdo */
-    justify-content: center; /* Centraliza horizontalmente */
-    align-items: center; /* Centraliza verticalmente */
-    min-height: 100vh; /* Altura mínima de 100% da viewport */
-    margin: 0; /* Remove a margem padrão */
-    background-color: #f0f0f0; /* Cor de fundo suave */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #eef2f3;
+    padding-top: 40px;
 }
 
-/* Estilos para o contêiner de clima */
-.weather-container {
-    background-color: white; /* Fundo branco */
-    padding: 20px; /* Espaçamento interno */
-    border-radius: 8px; /* Bordas arredondadas */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil */
-    text-align: center; /* Centraliza o texto */
+/* Estilos para o contêiner principal */
+.container {
+    background-color: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
 }
 
 /* Estilos para o título principal */
 h1 {
-    color: #333; /* Cor do texto escura */
+    color: #333;
+    margin-bottom: 25px;
+    font-size: 2em;
 }
 
-/* Estilos para os parágrafos */
-p {
-    color: #555; /* Cor do texto cinza */
-    font-size: 1.1em; /* Tamanho da fonte ligeiramente maior */
+/* Estilos para a caixa de busca */
+.search-box {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+    gap: 10px;
 }
 
-/* Estilos para os elementos span que contêm os dados do clima */
-span {
-    font-weight: bold; /* Texto em negrito */
-    color: #007bff; /* Cor azul para destaque */
+/* Estilos para o campo de input */
+#city-input {
+    width: 70%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1em;
+}
+
+#city-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Estilos para o botão de busca */
+#search-button {
+    padding: 12px 20px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#search-button:hover {
+    background-color: #0056b3;
+}
+
+/* Estilos para o contêiner de resultados */
+.weather-result-container {
+    margin-top: 20px;
+    text-align: left;
+    padding: 20px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+/* Estilos para parágrafos dentro do resultado */
+.weather-result-container p {
+    color: #555;
+    font-size: 1.1em;
+    margin: 10px 0;
+}
+
+/* Estilos para os dados (spans) */
+.weather-result-container span {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Estilo para mensagens de erro ou informativas */
+.info-message {
+    color: #d9534f; /* Cor vermelha para erros */
+    font-style: italic;
 }

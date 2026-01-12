@@ -1,82 +1,157 @@
-// Aguarda o conteúdo do DOM ser totalmente carregado antes de executar o script
+/**
+ * Converte o código do clima (WMO - World Meteorological Organization) em uma descrição textual.
+ * Esta função ajuda a traduzir os códigos numéricos da API para um formato legível para o usuário.
+ * @param {number} codigo - O código do clima fornecido pela API Open-Meteo.
+ * @returns {string} Uma string descritiva da condição climática.
+ */
+const codigoClimaParaString = (codigo) => {
+    const condicoes = {
+        0: "Céu limpo",
+        1: "Principalmente limpo",
+        2: "Parcialmente nublado",
+        3: "Encoberto",
+        45: "Nevoeiro",
+        48: "Nevoeiro depositando rima",
+        51: "Garoa: Leve",
+        53: "Garoa: Moderada",
+        55: "Garoa: Densa",
+        56: "Garoa Congelante: Leve",
+        57: "Garoa Congelante: Densa",
+        61: "Chuva: Leve",
+        63: "Chuva: Moderada",
+        65: "Chuva: Forte",
+        66: "Chuva Congelante: Leve",
+        67: "Chuva Congelante: Forte",
+        71: "Queda de neve: Leve",
+        73: "Queda de neve: Moderada",
+        75: "Queda de neve: Forte",
+        77: "Grãos de neve",
+        80: "Pancadas de chuva: Leves",
+        81: "Pancadas de chuva: Moderadas",
+        82: "Pancadas de chuva: Violentas",
+        85: "Pancadas de neve: Leves",
+        86: "Pancadas de neve: Fortes",
+        95: "Trovoada: Leve ou moderada",
+        96: "Trovoada com granizo leve",
+        99: "Trovoada com granizo forte",
+    };
+    return condicoes[codigo] || "Condição não disponível";
+};
+
+/**
+ * Função assíncrona para buscar dados meteorológicos de uma cidade específica.
+ *
+ * @param {string} nomeCidade O nome da cidade para a qual buscar o clima.
+ * @returns {Promise<object|null>} Um objeto com os dados do clima ou null em caso de erro.
+ */
+async function getWeatherByCity(nomeCidade) {
+    // Seleciona o container onde os resultados serão exibidos.
+    const resultContainer = document.getElementById('weather-result');
+
+    // **1. Validação de Entrada**
+    // Verifica se o nome da cidade foi fornecido. Se não, exibe uma mensagem de erro.
+    if (!nomeCidade || nomeCidade.trim() === "") {
+        console.error("Erro: O nome da cidade não pode ser vazio.");
+        resultContainer.innerHTML = `<p class="info-message">Por favor, insira o nome de uma cidade.</p>`;
+        return null;
+    }
+
+    // Limpa resultados anteriores e mostra uma mensagem de carregamento.
+    resultContainer.innerHTML = `<p class="info-message">Buscando...</p>`;
+
+    try {
+        // **2. Geocodificação: Converter nome da cidade em coordenadas (Latitude e Longitude)**
+        // Monta a URL para a API de Geocodificação da Open-Meteo.
+        const geoApiUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(nomeCidade)}&count=1&language=pt&format=json`;
+
+        // Realiza a chamada fetch para a API de geocodificação.
+        const geoResponse = await fetch(geoApiUrl);
+
+        // Verifica se a resposta da rede foi bem-sucedida.
+        if (!geoResponse.ok) {
+            // Lança um erro se a resposta HTTP não for 'ok' (ex: erro 500 no servidor da API).
+            throw new Error(`Erro de rede na geocodificação: ${geoResponse.statusText} (Código: ${geoResponse.status})`);
+        }
+
+        // Converte a resposta em JSON.
+        const geoData = await geoResponse.json();
+
+        // **3. Validação da Resposta da Geocodificação**
+        // Verifica se a API retornou algum resultado para a cidade pesquisada.
+        if (!geoData.results || geoData.results.length === 0) {
+            // Lança um erro específico se a cidade não for encontrada.
+            throw new Error(`Cidade "${nomeCidade}" não encontrada.`);
+        }
+
+        // Extrai as informações de latitude, longitude e o nome real da cidade (retornado pela API).
+        const { latitude, longitude, name: cidadeEncontrada } = geoData.results[0];
+
+        // **4. Busca do Clima com as Coordenadas Obtidas**
+        // Monta a URL para a API de Previsão do Tempo, usando as coordenadas.
+        const weatherApiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&timezone=auto`;
+
+        // Realiza a chamada fetch para a API de previsão do tempo.
+        const weatherResponse = await fetch(weatherApiUrl);
+
+        // Verifica se a resposta da rede foi bem-sucedida.
+        if (!weatherResponse.ok) {
+            // Lança um erro se a resposta HTTP não for 'ok'.
+            throw new Error(`Erro de rede na busca do clima: ${weatherResponse.statusText} (Código: ${weatherResponse.status})`);
+        }
+
+        // Converte a resposta em JSON.
+        const weatherData = await weatherResponse.json();
+
+        // **5. Formatação do Objeto de Retorno**
+        // Cria um objeto com os dados formatados conforme solicitado.
+        const climaFormatado = {
+            cidade: cidadeEncontrada,
+            temperatura: weatherData.current_weather.temperature,
+            unidade: weatherData.current_weather_units.temperature,
+            condicao_climatica: codigoClimaParaString(weatherData.current_weather.weathercode),
+        };
+
+        // **6. Exibição dos Resultados**
+        // Atualiza o HTML com os dados do clima formatado.
+        resultContainer.innerHTML = `
+            <p><strong>Cidade:</strong> <span>${climaFormatado.cidade}</span></p>
+            <p><strong>Temperatura:</strong> <span>${climaFormatado.temperatura}${climaFormatado.unidade}</span></p>
+            <p><strong>Condição:</strong> <span>${climaFormatado.condicao_climatica}</span></p>
+        `;
+
+        // Loga e retorna o objeto formatado.
+        console.log("Dados do clima obtidos:", climaFormatado);
+        return climaFormatado;
+
+    } catch (error) {
+        // **7. Tratamento Centralizado de Erros**
+        // Captura qualquer erro que ocorra nos blocos try (falhas de rede, cidade não encontrada, etc.).
+        console.error("Ocorreu um erro ao buscar o clima:", error.message);
+
+        // Exibe uma mensagem de erro amigável para o usuário.
+        resultContainer.innerHTML = `<p class="info-message">Erro: ${error.message}</p>`;
+        return null;
+    }
+}
+
+// **8. Adicionando o Event Listener**
+// Aguarda o DOM estar completamente carregado para adicionar os listeners e evitar erros.
 document.addEventListener('DOMContentLoaded', () => {
-    // Obtém os elementos do DOM onde os dados do clima serão exibidos
-    const localizacaoElement = document.getElementById('localizacao');
-    const temperaturaElement = document.getElementById('temperatura');
-    const climaDescricaoElement = document.getElementById('clima-descricao');
+    // Obtém referências para o botão de busca e o campo de input.
+    const searchButton = document.getElementById('search-button');
+    const cityInput = document.getElementById('city-input');
 
-    // Define a localização padrão: São Paulo, Brasil
-    const latitude = -23.5505;
-    const longitude = -46.6333;
-    const cidade = "São Paulo"; // Nome da cidade para exibição
+    // Adiciona um listener para o evento de clique no botão.
+    searchButton.addEventListener('click', () => {
+        // Chama a função getWeatherByCity passando o valor do campo de input.
+        getWeatherByCity(cityInput.value);
+    });
 
-    // Função para converter o código do clima (WMO) em uma string descritiva
-    const codigoClimaParaString = (codigo) => {
-        switch (codigo) {
-            case 0: return "Céu limpo";
-            case 1:
-            case 2:
-            case 3: return "Principalmente limpo, parcialmente nublado ou encoberto";
-            case 45:
-            case 48: return "Nevoeiro e nevoeiro depositando rima";
-            case 51:
-            case 53:
-            case 55: return "Garoa: Leve, moderada e de intensidade densa";
-            case 56:
-            case 57: return "Garoa Congelante: Leve e de intensidade densa";
-            case 61:
-            case 63:
-            case 65: return "Chuva: Leve, moderada e de forte intensidade";
-            case 66:
-            case 67: return "Chuva Congelante: Leve e de forte intensidade";
-            case 71:
-            case 73:
-            case 75: return "Queda de neve: Leve, moderada e de forte intensidade";
-            case 77: return "Grãos de neve";
-            case 80:
-            case 81:
-            case 82: return "Pancadas de chuva: Leves, moderadas e violentas";
-            case 85:
-            case 86: return "Pancadas de neve: Leves e fortes";
-            case 95: return "Trovoada: Leve ou moderada";
-            case 96:
-            case 99: return "Trovoada com granizo leve e forte";
-            default: return "Não disponível";
+    // Adiciona um listener para o evento 'keydown' no campo de input.
+    // Isso permite que o usuário pressione "Enter" para buscar.
+    cityInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            getWeatherByCity(cityInput.value);
         }
-    };
-
-    // Função assíncrona para buscar os dados do clima da API
-    const buscarDadosDoClima = async () => {
-        try {
-            // Constrói a URL da API com a latitude, longitude e os parâmetros desejados
-            const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=auto`);
-            
-            // Verifica se a resposta da requisição foi bem-sucedida
-            if (!response.ok) {
-                throw new Error(`Erro HTTP! status: ${response.status}`);
-            }
-            // Converte a resposta para JSON
-            const data = await response.json();
-
-            // Extrai a temperatura, o código do clima e a unidade da resposta
-            const temperatura = data.current.temperature_2m;
-            const codigoClima = data.current.weather_code;
-            const unidade = data.current_units.temperature_2m;
-
-            // Atualiza o conteúdo dos elementos no DOM com os dados obtidos
-            localizacaoElement.textContent = cidade;
-            temperaturaElement.textContent = `${temperatura}${unidade}`;
-            climaDescricaoElement.textContent = codigoClimaParaString(codigoClima);
-
-        } catch (error) {
-            // Em caso de erro, exibe uma mensagem no console e nos elementos do DOM
-            console.error("Erro ao buscar dados do clima:", error);
-            localizacaoElement.textContent = "Erro";
-            temperaturaElement.textContent = "Erro";
-            climaDescricaoElement.textContent = "Erro";
-        }
-    };
-
-    // Chama a função para buscar os dados do clima ao carregar a página
-    buscarDadosDoClima();
+    });
 });

@@ -7,11 +7,15 @@
     <link rel="stylesheet" href="src/css/style.css">
 </head>
 <body>
-    <div class="weather-container">
-        <h1>Clima Atual</h1>
-        <p>Localização: <span id="localizacao">Carregando...</span></p>
-        <p>Temperatura: <span id="temperatura">Carregando...</span></p>
-        <p>Clima: <span id="clima-descricao">Carregando...</span></p>
+    <div class="container">
+        <h1>Consulta Clima</h1>
+        <div class="search-box">
+            <input type="text" id="city-input" placeholder="Digite o nome da cidade">
+            <button id="search-button">Buscar</button>
+        </div>
+        <div id="weather-result" class="weather-result-container">
+            <!-- Os resultados do clima serão inseridos aqui -->
+        </div>
     </div>
 
     <script src="src/js/script.js"></script>
